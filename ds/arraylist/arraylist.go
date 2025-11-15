@@ -52,12 +52,23 @@ func (a *ArrayList[T]) RemoveAt(i int) T {
 		panic(fmt.Sprintf("index out of range: %d (len=%d)", i, len(a.data)))
 	}
 
-	returned := a.data[i]
-	last := len(a.data) - 1
+	removed := a.data[i]
+	// Shift elements left to fill the gap.
+	copy(a.data[i:], a.data[i+1:])
+	// Zero the old last slot to drop references, then shrink length by 1.
 	var zero T
+	last := len(a.data) - 1
 	a.data[last] = zero
-	a.data = append(a.data[:i], a.data[i+1:]...)
-	return returned
+	a.data = a.data[:last]
+	return removed
+}
+
+func (a *ArrayList[T]) Clear() {
+	var zero T
+	for i := range a.data {
+		a.data[i] = zero
+	}
+	a.data = a.data[:0]
 }
 
 func (a *ArrayList[T]) ensureCapacity(needed int) {
