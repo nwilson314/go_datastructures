@@ -232,3 +232,23 @@ func TestBTree_Insert_ManyKeys(t *testing.T) {
 		t.Error("should not find key 100")
 	}
 }
+
+func TestBTree_Insert_NonSequential(t *testing.T) {
+	tree := New(3)
+
+	// Insert in an order that forces splitting a non-last child
+	// After inserting 50, 30, 70: tree is root=[50], children=[[30], [70]]
+	// Insert 20: left child becomes [20, 30]
+	// Insert 40: left child is full, split it — this exposes the bug
+	for _, k := range []int{50, 30, 70, 20, 40} {
+		tree.Insert(k, k)
+	}
+
+	// All keys should be findable
+	for _, k := range []int{20, 30, 40, 50, 70} {
+		_, found := tree.Search(k)
+		if !found {
+			t.Errorf("expected to find key %d", k)
+		}
+	}
+}

@@ -56,11 +56,10 @@ func (b *BTree) Insert(key int, value any) {
 }
 
 func (b *BTree) Search(key int) (any, bool) {
-	val, found := b.searchNode(key, b.root)
-	if !found {
+	if b.root == nil {
 		return nil, false
 	}
-	return val, true
+	return b.searchNode(key, b.root)
 }
 
 func (b *BTree) searchNode(key int, node *Node) (any, bool) {
@@ -119,8 +118,10 @@ func (b *BTree) splitChild(node *Node, index int) {
 		leftSib.children = leftSib.children[:mid+1]
 	}
 
-	node.entries = append(node.entries, promotedEntry)
-	node.children = append(node.children, rightSib)
+	// node.entries = append(node.entries, promotedEntry)
+	// node.children = append(node.children, rightSib)
+	node.entries = slices.Insert(node.entries, index, promotedEntry)
+	node.children = slices.Insert(node.children, index+1, rightSib)
 }
 
 func (b *BTree) insertNonFull(node *Node, entry Entry) {
